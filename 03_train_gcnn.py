@@ -154,7 +154,7 @@ if __name__ == '__main__':
     }
     problem_folder = problem_folders[args.problem]
 
-    running_dir = f"trained_models/{args.problem}/{args.model}/{args.seed}"
+    running_dir = f"/content/drive/MyDrive/PhD/Research/D2PM/trained_models/{args.problem}/{args.model}/{args.seed}"
 
     os.makedirs(running_dir)
 
@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     ### MODEL LOADING ###
     sys.path.insert(0, os.path.abspath(f'models/{args.model}'))
-    import model
+    from models.baseline import model
     importlib.reload(model)
     model = model.GCNPolicy()
     del sys.path[0]
@@ -242,6 +242,11 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate=lambda: lr)  # dynamic LR trick
     best_loss = np.inf
     for epoch in range(max_epochs + 1):
+        if args.last_epoch != -1:
+          epoch = args.last_epoch
+          model.restore_state(os.path.join(running_dir, 'best_params.pkl'))
+          best_loss = args.best_loss
+
         log(f"EPOCH {epoch}...", logfile)
         epoch_loss_avg = tfe.metrics.Mean()
         epoch_accuracy = tfe.metrics.Accuracy()
